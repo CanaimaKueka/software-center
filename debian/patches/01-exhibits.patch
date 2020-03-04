@@ -1,0 +1,69 @@
+Index: software-center/softwarecenter/ui/gtk3/widgets/exhibits.py
+===================================================================
+--- software-center.orig/softwarecenter/ui/gtk3/widgets/exhibits.py	2013-09-20 14:11:24.737239203 -0430
++++ software-center/softwarecenter/ui/gtk3/widgets/exhibits.py	2013-09-20 14:13:42.705923355 -0430
+@@ -35,6 +35,7 @@
+ from softwarecenter.ui.gtk3.shapes import Circle
+ from softwarecenter.ui.gtk3.drawing import rounded_rect
+ from softwarecenter.ui.gtk3.utils import point_in
++from softwarecenter.netstatus import network_state_is_connected
+ import softwarecenter.paths
+ 
+ LOG=logging.getLogger(__name__)
+@@ -79,14 +80,21 @@
+ 
+     def __init__(self):
+         self.id = 0
+-        self.package_names = "armagetronad,calibre,cheese,homebank,stellarium,gimp,inkscape,blender,audacity,gufw,frozen-bubble,fretsonfire,moovida,liferea,arista,gtg,freeciv-client-gtk,openshot,supertuxkart,tumiki-fighters,tuxpaint,webservice-office-zoho"
+-        self.title_translated = _("Our star apps")
++        self.package_names = ("virtualbox-qt,neverball,nautilus-dropbox,flashplugin-nonfree,"
++                              "0ad,vlc,darktable,kmag,ekiga,planner,canaima-desarrollador,"
++                              "canaima-semilla,inkscape,geany,emesene,deluge-gtk,sound-juicer,"
++                              "cheese,openproj,dia,gnome-bluetooth,armagetronad,calibre,cheese,tibisay,"
++                              "homebank,stellarium,gimp,inkscape,blender,audacity,gufw,frozen-bubble,"
++                              "fretsonfire-game,moovida,liferea,arista,gtg,freeciv-client-gtk,mango-paola,"
++                              "openshot,supertuxkart,tumiki-fighters,tuxpaint,terminator,prometeo-abc")
++        
++	self.title_translated = _("Our star apps")
+         self.published = True
+         self.banner_url = "file:%s" % (os.path.abspath(os.path.join(softwarecenter.paths.datadir, "default_banner/fallback.png")))
+         self.html = EXHIBIT_HTML % { 
+             'banner_url' : self.banner_url,
+-            'title' : _("Our star apps"),
+-            'subtitle' : _("Come and explore our favourites"),
++            'title' : _(" "),
++            'subtitle' : _(" "),
+       }
+         # we should extract this automatically from the html
+         #self.atk_name = _("Default Banner")
+@@ -109,7 +117,7 @@
+         settings = self.view.get_settings()
+         settings.set_property("enable-java-applet", False)
+         settings.set_property("enable-plugins", False)
+-        settings.set_property("enable-scripts", False)
++        settings.set_property("enable-scripts", True)
+         self.view.set_size_request(-1, ExhibitBanner.MAX_HEIGHT)
+         self.add(self.view)
+         self.show_all()
+@@ -126,7 +134,7 @@
+         if view.get_property("load-status") ==  WebKit.LoadStatus.FINISHED:
+             # this needs to run with a timeout because otherwise the 
+             # status is emited before the offscreen image is finihsed
+-            GObject.timeout_add(1, lambda: self.emit("render-finished"))
++            GObject.timeout_add(100, lambda: self.emit("render-finished"))
+ 
+     def on_download_error(self, loader, exception, error):
+         LOG.warn("download failed: '%s', '%s'" % (exception, error))
+@@ -147,7 +155,11 @@
+         scheme, netloc, server_path, para, query, frag = urlparse(
+             self.exhibit.banner_url)
+         html = html.replace(server_path, image_name)
+-        self.view.load_string(html, "text/html", "UTF-8", 
++        sensitive = network_state_is_connected()
++        if sensitive == True:
++			self.view.open("http://bannersoftwarecenter.canaima.net.ve/")
++        else:
++			self.view.load_string(html, "text/html", "UTF-8", 
+                               "file:%s/" % cache_dir)
+         return
+ 
